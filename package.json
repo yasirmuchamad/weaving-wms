@@ -1,0 +1,26 @@
+{
+  "name": "weaving-wms",
+  "version": "1.0.0",
+  "description": "Web Application to record warehouse transaction on weaving departement",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx sass static/scss/custom.scss static/css/custom.css --quiet-deps",
+    "watch": "npx sass --watch static/scss/custom.scss:static/css/custom.css --quiet-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yasirmuchamad/weaving-wms.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yasirmuchamad/weaving-wms/issues"
+  },
+  "homepage": "https://github.com/yasirmuchamad/weaving-wms#readme",
+  
+  "dependencies": {
+    "bootstrap": "^5.3.7"
+  }
+}

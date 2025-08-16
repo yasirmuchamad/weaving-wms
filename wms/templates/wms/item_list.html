@@ -1,20 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h2>List Item</h2>
-    <div class="container">
-        <div class="d-grid gap-2 d-md-block">
-            <button class="btn btn-primary" type="button">Add Item</button>
-            <button class="btn btn-primary" type="button">Button</button>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">List Item</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group md-2 gap-2">
+            <a href="" class="btn btn-sm btn-gray-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="newspaper-outline"></ion-icon> Export</a>
+            <button type="button" class="btn btn-sm btn-gray-700 ex-tbl d-flex align-items-center justify-content-center gap-2" onclick="printSection()" style="width: 120px;"><ion-icon name="print-outline"></ion-icon> Print</button>
+          </div>
         </div>
+    </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom gap-2">
+        <a href="{% url 'wms:add_item' %}" class="btn btn-sm btn-blue-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 180px;"><ion-icon name="duplicate-outline"></ion-icon> Add New Item</a>
+        <input type="text" id="filter-input" class="form-control d-flex align-items-center justify-content-center mr-2" placeholder="Search">
     </div>
     <table class="table">
         <tr>
             <th>No</th>
             <th>Picture</th>
-            <th>Name</th>
+            <th style="width: 600px;">Name</th>
             <th>Stock</th>
             <th>Unit</th>
-            <th>Action</th>
+            <th style="text-align: center;">Action</th>
         </tr>
         
         {% for i in items %}
@@ -30,9 +36,9 @@
             <td>{{ i.name }}</td>
             <td>{{ i.stock }}</td>
             <td>{{ i.unit }}</td>
-            <td>
-                <a href="" class="btn btn-xs btn-warning"><ion-icon name="create-outline"></ion-icon> Update</a>
-                <a href="" class="btn btn-xs btn-danger"><ion-icon name="trash-outline"></ion-icon> Delete</a>
+            <td style="text-align: center;">
+                <a href="" class="btn btn-sm btn-yellow-600" style="width: 100px; color: white;"><ion-icon name="create-outline"></ion-icon> Update</a>
+                <a href="" class="btn btn-sm btn-red-600" style="width: 100px;"><ion-icon name="trash-outline"></ion-icon> Delete</a>
             </td>
         </tr>
         {% endfor %}
