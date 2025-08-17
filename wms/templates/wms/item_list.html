@@ -20,6 +20,7 @@
             <th style="width: 600px;">Name</th>
             <th>Stock</th>
             <th>Unit</th>
+            <th>Location</th>
             <th style="text-align: center;">Action</th>
         </tr>
         
@@ -28,7 +29,7 @@
             <td>{{ forloop.counter }}</td>
             <td>
             {% if i.picture %}
-                <img src="{{ i.picture.url }}" alt="item.jpg" width="80" height="80">
+                <img src="{{ i.picture.url }}" alt="item.jpg" width="50" height="50">
             {% else %}
                 No Image
             {% endif %}
@@ -36,6 +37,7 @@
             <td>{{ i.name }}</td>
             <td>{{ i.stock }}</td>
             <td>{{ i.unit }}</td>
+            <td>{{ i.location }}</td>
             <td style="text-align: center;">
                 <a href="" class="btn btn-sm btn-yellow-600" style="width: 100px; color: white;"><ion-icon name="create-outline"></ion-icon> Update</a>
                 <a href="" class="btn btn-sm btn-red-600" style="width: 100px;"><ion-icon name="trash-outline"></ion-icon> Delete</a>
