@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mt-3 mb-3">Add Transaksi</h2>  
+    <!-- {% if messages %}
+        <div class="alert alert-danger">
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %} -->
+    <form method="post">
+        {% csrf_token %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="col mb-4">
+                            <label for="transaction_type" class="form-label">Transaction Type</label>
+                            {{ forms.transaction_type }}
+                        </div>
+                        <div class="col mb-4" id="requested-field">
+                            <label for="requested_by" class="form-label">Requested by</label>
+                            {{ forms.requested_by }}
+                        </div>
+                        <div class="col mb-4" id="received-field">
+                            <label for="received_by" class="form-label">Received by</label>
+                            {{ forms.received_by }}
+                        </div>
+                        <div class="col mb-4">
+                            <label for="subdepartement" class="form-label">Sub-Departement</label>
+                            {{ forms.subdepartement }}
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="col mb-4">
+                            <label for="note" class="form-label">Note</label>
+                            {{ forms.note }}
+                        </div>
+                    </div>
+                </div>
+            </div>           
+        </div>     
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <div id="formset-area">
+                {{ formset.management_form }}
+                
+                {% for f in formset %}
+                    
+                    <div class="row mb-4 formset-row">
+                        <div class="col">
+                            <label for="{{ f.item.id_for_label }}" class="form-label">Item</label>
+                            {{ f.item }}
+                        </div>
+                        <div class="col">
+                            <label for="{{ f.qty.id_for_label }}" class="form-label">Quantity</label>
+                            {{ f.qty }}
+                            {% if f.qty.errors %}
+                                <div class="text-danger">
+                                    {{ f.qty.errors }}
+                                </div>  
+                            {% endif %}
+                        </div>
+                        <div class="col-1">
+                            <button type="button" class="btn btn-outline-red-600 remove-form">X</button>
+                        </div>
+                    </div>
+                
+                {% endfor %}
+                </div>
+                <button type="button" id="add-form" class="btn btn-sm btn-outline-blue-600">Add Another Item</button>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-outline-green-600 d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="save-outline"> </ion-icon> Submit</button>
+            <button type="reset" class="btn btn-sm btn-outline-gray-700 d-flex align-items-center justify-content-center gap-2" style="width: 120px;">
+                <ion-icon name="sync-outline"> </ion-icon>Clear</button>
+            <a href="{% url 'wms:transaction_list' %}" class="btn btn-sm btn-outline-red-600 d-flex align-items-center justify-content-center gap-2" style="width: 120px;">
+                <ion-icon name="close-circle-outline"></ion-icon> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleField(){
+        const typeSelect = document.getElementById('transaction_type');
+        const requestedField = document.getElementById('requested_by');
+        const receivedField = document.getElementById('received_by');
+
+
+        if (typeSelect.value === "IN") {
+            document.getElementById('requested-field').style.display = 'none';
+            document.getElementById('received-field').style.display = 'block';
+        }else if (typeSelect.value === 'OUT'){
+            document.getElementById('requested-field').style.display = 'block';
+            document.getElementById('received-field').style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const typeSelect = document.getElementById('transaction_type');
+        toggleField();
+        typeSelect.addEventListener("change", toggleField);
+    });
+</script>
+<script>
+    const formsetArea = document.getElementById("formset-area");
+    const addBtn = document.getElementById("add-form");
+    let totalForms = document.getElementById("id_items-TOTAL_FORMS");
+
+    addBtn.addEventListener("click", function(){
+        let currentFormCount = parseInt(totalForms.value);
+        console.log("Current forms:", currentFormCount);
+
+        let firstFormRow = formsetArea.querySelector(".formset-row");
+        if (!firstFormRow) {
+            console.error("❌ Tidak ada .formset-row ditemukan. Pastikan template punya class='formset-row'");
+            return;
+        }
+
+        let newForm = firstFormRow.cloneNode(true);
+
+        // reset input
+        newForm.querySelectorAll("input, select").forEach(el => {
+            let name = el.name.replace(/-\d+-/, `-${currentFormCount}-`);
+            let id = `id_${name}`;
+            console.log("Updating field:", el.name, "=>", name);
+
+            el.name = name;
+            el.id = id;
+
+            if(el.tagName === "INPUT") el.value = "";
+            if(el.tagName === "SELECT") el.selectedIndex = 0;
+        });
+
+        formsetArea.appendChild(newForm);
+        totalForms.value = currentFormCount + 1;
+        console.log("✅ Form baru ditambahkan. Total:", totalForms.value);
+    });
+</script>
+{% endblock content %}
+

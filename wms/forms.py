@@ -1,5 +1,6 @@
 from django import forms
-from .models import Item, Transaction
+from django.forms import inlineformset_factory
+from .models import Item, Transaction, TransactionItem
 
 class ItemForm(forms.ModelForm):
     """Form definition for Item."""
@@ -28,12 +29,62 @@ class TransactionForm(forms.ModelForm):
         """Meta definition for Transactionform."""
 
         model = Transaction
-        fields = ['item', 'qty', 'transaction_type']
+        fields = ['transaction_type', 'requested_by', 'received_by', 'subdepartement', 'note']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # filter field berdasarkan tipe Transaksi
-        if self.instance and self.instance.transaction_type == "IN":
-            self.fields['requested_by'].widget = forms.HiddenInput()
-        elif self.instance and self.instance.transaction_type == "OUT":
-            self.fields['received_by'].widget = forms.HiddenInput()
+
+        # field yang akan ditampilkan
+        self.fields['transaction_type'].widget.attrs.update({'id':'transaction_type', 'name':'transaction_type',
+                'class':'form-select'}) 
+        self.fields['requested_by'].widget.attrs.update({'id':'requested_by', 'name':'requested_by',
+                'class':'form-control'})
+        self.fields['received_by'].widget.attrs.update({'id':'received_by', 'name':'received_by',
+                'class':'form-control'})
+        self.fields['subdepartement'].widget.attrs.update({'id':'subdepartement', 'name':'subdepartement',
+                'class':'form-select'})
+        self.fields['note'].widget.attrs.update({'id':'note', 'name':'note',
+                'class':'form-control', 'style':'height:230px;'})
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        transaction_type = cleaned_data.get("transaction_type")
+        requested_by = cleaned_data.get("requested_by")
+        received_by = cleaned_data.get("received_by")
+
+        if transaction_type == "IN":
+            if not received_by:
+                raise forms.ValidationError('Received by wajib diisi untuk transaksi IN.')
+            cleaned_data["requested_by"] = None
+        
+        elif transaction_type == "OUT":
+            if not requested_by:
+                raise forms.ValidationError('Requested by wajib diisi untuk transaksi OUT.')
+            cleaned_data["received_by"] = None
+
+        return cleaned_data
+    
+class TransactionItemForm(forms.ModelForm):
+        """Form definition for TransactionItem."""
+
+        class Meta:
+                """Meta definition for TransactionItemform."""
+
+                model = TransactionItem
+                fields = ['item', 'qty']
+        
+        def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+
+                # field yang akan ditampilkan
+                self.fields['item'].widget.attrs.update({'id':'item', 'name':'item',
+                        'class':'form-select'}) 
+                self.fields['qty'].widget.attrs.update({'id':'qty', 'name':'qty',
+                        'class':'form-control'})
+
+TransactionItemFormSet = inlineformset_factory(
+     Transaction, TransactionItem,
+     form=TransactionItemForm,
+     extra=1,
+     can_delete=True
+)

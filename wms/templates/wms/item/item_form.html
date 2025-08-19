@@ -1,0 +1,67 @@
+ {% extends 'base.html' %}
+
+<!--    
+<h2>Add Item</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+-->
+
+{% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Form Item</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <!-- <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Print</button>
+          </div> -->
+        </div>
+    </div>
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col mb-3">
+              <label for="name" class="form-label"> Name</label>
+                {{ form.name }}
+            </div>
+            <div class="col mb-3">
+              <label for="unit" class="form-label">Unit</label>
+                {{ form.unit }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mb-3">
+              <label for="location" class="form-label"> Location</label>
+                {{ form.location }}
+            </div>
+            <div class="col mb-3">
+              <label for="picture" class="form-label">Picture</label>
+                {{ form.picture }}
+            </div>        
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-outline-green-600 d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="save-outline"> </ion-icon> Submit</button>
+            <button type="reset" class="btn btn-sm btn-outline-gray-700 d-flex align-items-center justify-content-center gap-2" style="width: 120px;">
+              <ion-icon name="sync-outline"> </ion-icon>Clear</button>
+            <a href="{% url 'wms:item_list' %}" class="btn btn-sm btn-outline-red-600 d-flex align-items-center justify-content-center gap-2" style="width: 120px;">
+                <ion-icon name="close-circle-outline"></ion-icon> Cancel
+            </a>
+          </div>
+        </div>
+      </form>
+{% endblock content %}

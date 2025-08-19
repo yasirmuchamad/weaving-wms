@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">List Item</h1>
+        <h2 class="h2">{{ title }}</h2>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group md-2 gap-2">
             <a href="" class="btn btn-sm btn-gray-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="newspaper-outline"></ion-icon> Export</a>
@@ -39,8 +39,8 @@
             <td>{{ i.unit }}</td>
             <td>{{ i.location }}</td>
             <td style="text-align: center;">
-                <a href="" class="btn btn-sm btn-yellow-600" style="width: 100px; color: white;"><ion-icon name="create-outline"></ion-icon> Update</a>
-                <a href="" class="btn btn-sm btn-red-600" style="width: 100px;"><ion-icon name="trash-outline"></ion-icon> Delete</a>
+                <a href="" class="btn btn-sm btn-outline-yellow-600" style="width: 100px;"><ion-icon name="create-outline"></ion-icon> Update</a>
+                <a href="" class="btn btn-sm btn-outline-red-600" style="width: 100px;"><ion-icon name="trash-outline"></ion-icon> Delete</a>
             </td>
         </tr>
         {% endfor %}
