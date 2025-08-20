@@ -4,7 +4,7 @@
         <h2 class="h2">{{ title }}</h2>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group md-2 gap-2">
-            <a href="" class="btn btn-sm btn-gray-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="newspaper-outline"></ion-icon> Export</a>
+            <a href="{% url 'wms:export_location' %}" class="btn btn-sm btn-gray-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="newspaper-outline"></ion-icon> Export</a>
             <button type="button" class="btn btn-sm btn-gray-700 ex-tbl d-flex align-items-center justify-content-center gap-2" onclick="printSection()" style="width: 120px;"><ion-icon name="print-outline"></ion-icon> Print</button>
           </div>
         </div>

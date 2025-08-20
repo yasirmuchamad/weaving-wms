@@ -5,8 +5,12 @@ from django.forms import inlineformset_factory
 from django.db.models import Sum
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 from django.db import transaction
 from django.core.paginator import Paginator
+import openpyxl
+from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
 
 def location_list(request):
     locations = Location.objects.all().order_by('name')
@@ -60,6 +64,33 @@ def delete_location(request, pk):
         location.delete()
     return redirect('wms:location_list')
 
+def export_locationToExcel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "List Location"
+
+    # Judul besar di baris 1
+    ws.merge_cells('A1:G1')  # gabungkan dari kolom A sampai B
+    ws['A1'] = "List Location"
+    ws['A1'].font = Font(size=14, bold=True)
+    ws['A1'].alignment = Alignment(horizontal='center')
+
+    # Header
+    headers = ['Id', 'Name']
+    ws.append(headers)
+
+    # Data
+    for idx, s in enumerate(Location.objects.all(), start=1):
+        ws.append([
+            idx,
+            s.name,
+        ])
+
+    # Response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=Location.xlsx'
+    wb.save(response)
+    return response
     
 def item_list(request):
     item_lists = Item.objects.all().order_by('name')
@@ -113,6 +144,38 @@ def delete_item(request, pk):
         item.delete()
     return redirect('wms:item_list')
 
+def export_itemToExcel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "List Item"
+
+    # Judul besar di baris 1
+    ws.merge_cells('A1:G1')  # gabungkan dari kolom A sampai B
+    ws['A1'] = "List Item"
+    ws['A1'].font = Font(size=14, bold=True)
+    ws['A1'].alignment = Alignment(horizontal='center')
+
+    # Header
+    headers = ['Id', 'Name', 'Unit', 'Location', 'Picture', 'Stock']
+    ws.append(headers)
+
+    # Data
+    for idx, s in enumerate(Item.objects.all(), start=1):
+        ws.append([
+            idx,
+            s.name,
+            s.unit,
+            s.location.name,
+            str(s.picture.url if s.picture else ""),  # konversi ke string
+            s.stock,
+        ])
+
+    # Response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=Item.xlsx'
+    wb.save(response)
+    return response
+
 def subdepartement_list(request):
     subdepts = Subdepartement.objects.all().order_by('name')
 
@@ -164,6 +227,37 @@ def delete_subdepartement(request, pk):
     if request.method == 'POST':
         subdept.delete()
     return redirect('wms:subdept_list')
+
+
+def export_subdeptToExcel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "List Sub-Departement"
+
+    # Judul besar di baris 1
+    ws.merge_cells('A1:G1')  # gabungkan dari kolom A sampai B
+    ws['A1'] = "List Sub-Departement"
+    ws['A1'].font = Font(size=14, bold=True)
+    ws['A1'].alignment = Alignment(horizontal='center')
+
+    # Header
+    headers = ['Id', 'Name', 'Leader']
+    ws.append(headers)
+
+    # Data
+    for idx, s in enumerate(Subdepartement.objects.all(), start=1):
+        ws.append([
+            idx,
+            s.name,
+            s.leader,
+        ])
+
+    # Response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=Subdept.xlsx'
+    wb.save(response)
+    return response
+
 
 def transaction_list(request):
     transaction_item = Transaction.objects.annotate(total_qty=Sum('items__qty')).order_by('-date')
@@ -239,3 +333,65 @@ def add_transaction(request):
     }
 
     return render(request, 'wms/transaction/transaction_form.html', context)
+
+def export_transaksiToExcel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "List Transaksi"
+
+    # Judul besar di baris 1
+    # ws.merge_cells('A1:G1')  # gabungkan dari kolom A sampai B
+    # ws['A1'] = "List Transaksi"
+    # ws['A1'].font = Font(size=14, bold=True)
+    # ws['A1'].alignment = Alignment(horizontal='center')
+
+    # Header
+    headers = ['Id', 'Date', 'Type', 'requested_by', 'received_by', 'Sub-departement', 'Item', 'Qty']
+    ws.append(headers)
+
+    # Data
+    row_num = 2
+    transactions = Transaction.objects.prefetch_related("items__item").all().order_by("-date")
+    for idx, trx in enumerate(transactions, start=1):
+        if trx.items.exists():
+            for trx_item in trx.items.all():
+                ws.append([
+                    idx,
+                    trx.date.strftime("%Y-%m-%d %H:%M"),
+                    trx.transaction_type,
+                    trx.requested_by,
+                    trx.received_by,
+                    trx.subdepartement.name,
+                    trx_item.item.name,
+                    trx_item.qty,
+                    trx.note,
+                ])
+        else:
+            ws.append([
+                idx,
+                    trx.date.strftime("%Y-%m-%d %H:%M"),
+                    trx.transaction_type,
+                    trx.requested_by,
+                    trx.received_by,
+                    trx.subdepartement.name,
+                    "-",
+                    0,
+                    trx.note,
+                ])
+        
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column
+            for cell in col:
+                try:
+                    if cell.value:
+                        max_length = max(max_length, len(str(cell.value)))
+                except:
+                    pass
+            ws.column_dimensions[get_column_letter(column)].width = max_length + 2
+
+    # Response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=Transaction.xlsx'
+    wb.save(response)
+    return response
