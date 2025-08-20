@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h2">{{ title }}</h2>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group md-2 gap-2">
+            <a href="" class="btn btn-sm btn-gray-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 120px;"><ion-icon name="newspaper-outline"></ion-icon> Export</a>
+            <button type="button" class="btn btn-sm btn-gray-700 ex-tbl d-flex align-items-center justify-content-center gap-2" onclick="printSection()" style="width: 120px;"><ion-icon name="print-outline"></ion-icon> Print</button>
+          </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom gap-2">
+        <a href="{% url 'wms:add_subdept' %}" class="btn btn-sm btn-blue-600 ex-tbl d-flex align-items-center justify-content-center gap-2" style="width: 200px;"><ion-icon name="duplicate-outline"></ion-icon> Add New Location</a>
+        <input type="text" id="filter-input" class="form-control d-flex align-items-center justify-content-center mr-2" placeholder="Search">
+    </div>
+    <table class="table">
+        <tr>
+            <th>No</th>
+            <th>Sub-Departement Name</th>
+            <th>Leader Name</th>
+            <th style="text-align: center;">Action</th>
+        </tr>
+        
+        {% for s in subdepts %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.leader|default:'-' }}</td>
+            <td style="text-align: center;">
+                <a href="" class="btn btn-sm btn-outline-yellow-600" style="width: 100px;"><ion-icon name="create-outline"></ion-icon> Update</a>
+                <a href="" class="btn btn-sm btn-outline-red-600" style="width: 100px;"><ion-icon name="trash-outline"></ion-icon> Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+            
+    </table>
+{% endblock content %}
+    

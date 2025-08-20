@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Item, Transaction, TransactionItem
+from .models import Item, Transaction, TransactionItem, Location, Subdepartement
 
 class ItemForm(forms.ModelForm):
     """Form definition for Item."""
@@ -18,8 +18,38 @@ class ItemForm(forms.ModelForm):
         self.fields['unit'].widget.attrs.update({'id':'unit', 'name':'unit',
                 'class':'form-control'})
         self.fields['location'].widget.attrs.update({'id':'location', 'name':'location',
-                'class':'form-control'}) 
+                'class':'form-select'}) 
         self.fields['picture'].widget.attrs.update({'id':'picture', 'name':'picture',
+                'class':'form-control'}) 
+        
+class LocationForm(forms.ModelForm):
+    """Form definition for Location."""
+
+    class Meta:
+        """Meta definition for Locationform."""
+
+        model = Location
+        fields = ['name']
+
+    def __init__(self, *args, **KWarg):
+        super(LocationForm, self).__init__(*args, **KWarg)
+        self.fields['name'].widget.attrs.update({'id':'name', 'name':'name',
+                'class':'form-control'}) 
+        
+class SubdepartementForm(forms.ModelForm):
+    """Form definition for Location."""
+
+    class Meta:
+        """Meta definition for Locationform."""
+
+        model = Subdepartement
+        fields = ['name', 'leader']
+
+    def __init__(self, *args, **KWarg):
+        super(SubdepartementForm, self).__init__(*args, **KWarg)
+        self.fields['name'].widget.attrs.update({'id':'name', 'name':'name',
+                'class':'form-control'}) 
+        self.fields['leader'].widget.attrs.update({'id':'leader', 'name':'leader',
                 'class':'form-control'}) 
 
 class TransactionForm(forms.ModelForm):
