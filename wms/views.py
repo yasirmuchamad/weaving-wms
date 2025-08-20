@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Item, Subdepartement, Transaction, TransactionItem, Location
 from .forms import ItemForm, SubdepartementForm, TransactionForm, TransactionItemForm, TransactionItemFormSet, LocationForm
 from django.forms import inlineformset_factory
@@ -6,9 +6,14 @@ from django.db.models import Sum
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.core.paginator import Paginator
 
 def location_list(request):
-    location = Location.objects.all()
+    locations = Location.objects.all().order_by('name')
+
+    paginator = Paginator(locations, 10)
+    page_number = request.GET.get('page')
+    location = paginator.get_page(page_number)
 
     context = {
         'title':'List Location',
@@ -31,8 +36,37 @@ def add_location(request):
 
     return render(request, 'wms/location/location_form.html', context)
 
+def update_location(request, pk):
+    location = get_object_or_404(Location, pk=pk)
+
+    if request.method == 'POST':
+        form = LocationForm(request.POST, instance=location)
+        if form.is_valid():
+            form.save()
+            return redirect('wms:location_list')
+    else:
+        form = LocationForm(instance=location)
+
+    context = {
+        'title': 'Update Location',
+        'form': form
+    }
+    return render(request, 'wms/location/location_form.html', context)
+
+def delete_location(request, pk):
+    location = get_object_or_404(Location, pk=pk)
+
+    if request.method == 'POST':
+        location.delete()
+    return redirect('wms:location_list')
+
+    
 def item_list(request):
-    items = Item.objects.all()
+    item_lists = Item.objects.all().order_by('name')
+
+    paginator = Paginator(item_lists, 10)
+    page_number = request.GET.get('page')
+    items = paginator.get_page(page_number)
 
     context = {
         'title':'List Item',
@@ -55,8 +89,36 @@ def add_item(request):
     }
     return render(request, 'wms/item/item_form.html', context)
 
+def update_item(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+
+    if request.method == 'POST':
+        form = ItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            return redirect('wms:item_list')
+    else:
+        form = ItemForm(instance=item)
+
+    context = {
+        'title': 'Update Item',
+        'form': form
+    }
+    return render(request, 'wms/item/item_form.html', context)
+
+def delete_item(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+
+    if request.method == 'POST':
+        item.delete()
+    return redirect('wms:item_list')
+
 def subdepartement_list(request):
-    subdept = Subdepartement.objects.all().order_by('name')
+    subdepts = Subdepartement.objects.all().order_by('name')
+
+    paginator = Paginator(subdepts, 10)
+    page_number = request.GET.get('page')
+    subdept = paginator.get_page(page_number)
 
     context = {
         'title':'List Sub-Departement',
@@ -79,8 +141,37 @@ def add_subdepartement(request):
     }
     return render(request, 'wms/subdept/subdept_form.html', context)
 
+def update_subdepartement(request, pk):
+    subdept = get_object_or_404(Subdepartement, pk=pk)
+
+    if request.method == 'POST':
+        form = SubdepartementForm(request.POST, instance=subdept)
+        if form.is_valid():
+            form.save()
+            return redirect('wms:subdept_list')
+    else:
+        form = SubdepartementForm(instance=subdept)
+
+    context = {
+        'title': 'Update Sub-Departement',
+        'form': form
+    }
+    return render(request, 'wms/subdept/subdept_form.html', context)
+
+def delete_subdepartement(request, pk):
+    subdept = get_object_or_404(Subdepartement, pk=pk)
+
+    if request.method == 'POST':
+        subdept.delete()
+    return redirect('wms:subdept_list')
+
 def transaction_list(request):
     transaction_item = Transaction.objects.annotate(total_qty=Sum('items__qty')).order_by('-date')
+
+    paginator = Paginator(transaction_item, 10)
+    page_number = request.GET.get('page')
+    transaction_item = paginator.get_page(page_number)
+
     context = {
          'title':"List Transaction",
          'transactions' : transaction_item

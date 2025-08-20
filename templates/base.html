@@ -27,12 +27,13 @@
       </button>
 
       <div class="ms-auto d-flex align-items-center">
-        <button id="toggleTheme" class="btn btn-yellow-400 me-3"><ion-icon name="sunny"></ion-icon></button>
-        <div class="navbar-nav">
+        <button id="toggleTheme" class="btn btn-yellow-400 me-3"><ion-icon name="sunny-outline"></ion-icon></button>
+        <button class="btn btn-red-200"><ion-icon name="exit-outline"></ion-icon>Sign Out</button>
+        <!-- <div class="navbar-nav mr-2">
           <div class="nav-item text-nowrap">
             <a class="btn btn-red-400" href="#">Sign out</a>
           </div>
-        </div>
+        </div> -->
       </div>
     </header>
 
@@ -42,32 +43,32 @@
         <div class="position-sticky pt-3 sidebar-sticky">
           <ul class="nav flex-column">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">
+              <a class="nav-link" href="#">
                 <ion-icon name="home-outline"></ion-icon>
                 Dashboard
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'wms:item_list' %}">
-                <ion-icon name="create-outline"></ion-icon>
+                <ion-icon name="grid-outline"></ion-icon>
                 Item
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'wms:location_list' %}">
-                <ion-icon name="create-outline"></ion-icon>
+                <ion-icon name="locate-outline"></ion-icon>
                 Location
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'wms:location_list' %}">
-                <ion-icon name="create-outline"></ion-icon>
+              <a class="nav-link" href="{% url 'wms:subdept_list' %}">
+                <ion-icon name="trail-sign-outline"></ion-icon>
                 Sub-Departement
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'wms:transaction_list' %}">
-                <ion-icon name="create-outline"></ion-icon>
+                <ion-icon name="cart-outline"></ion-icon>
                 Transaction
               </a>
             </li>
