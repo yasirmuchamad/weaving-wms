@@ -11,6 +11,11 @@ from django.core.paginator import Paginator
 import openpyxl
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from datetime import datetime
 
 def location_list(request):
     locations = Location.objects.all().order_by('name')
@@ -91,6 +96,57 @@ def export_locationToExcel(request):
     response['Content-Disposition'] = 'attachment; filename=Location.xlsx'
     wb.save(response)
     return response
+
+def print_locationToPdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="location.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # judul
+    title = Paragraph("Location Report", styles['Title'])
+    elements.append(title)
+
+    # date
+    date_str = datetime.now().strftime("%d %B %Y, %H:%M")
+    elements.append(Paragraph(f"Date: {date_str}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+
+    # ambil data dari model
+    location = Location.objects.all().order_by("name")
+
+    # header tabel
+    data = [['No', 'Name']]
+
+    # isi table
+    for i, location in enumerate(location, start=1):
+        data.append([
+            i, 
+            location.name,
+        ])
+
+    # buat tabel
+    table = Table(data, colWidths=[40,200])
+    
+    # style table
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ])
+    table.setStyle(style)
+    elements.append(table)
+
+    # Build PDF
+    doc.build(elements)
+    return response
+
+
     
 def item_list(request):
     item_lists = Item.objects.all().order_by('name')
@@ -176,6 +232,58 @@ def export_itemToExcel(request):
     wb.save(response)
     return response
 
+def print_itemToPdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="item.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # judul
+    title = Paragraph("Item Report", styles['Title'])
+    elements.append(title)
+
+    # date
+    date_str = datetime.now().strftime("%d %B %Y, %H:%M")
+    elements.append(Paragraph(f"Date: {date_str}", styles['Normal']))
+    elements.append(Spacer(12, 12))
+
+    # ambil data dari model
+    item = Item.objects.all().order_by("name")
+
+    # header tabel
+    data = [[ 'No', 'Name', 'Unit', 'Location', 'Stock' ]]
+
+    # isi table
+    for i, items in enumerate(item, start=1):
+        data.append([
+            i, 
+            items.name,
+            items.unit,
+            items.location,
+            items.stock,
+        ])
+
+    # buat tabel
+    table = Table(data, colWidths=[40, 200, 50, 80, 50])
+    
+    # style table
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ])
+    table.setStyle(style)
+    elements.append(table)
+
+    # Build PDF
+    doc.build(elements)
+    return response
+
 def subdepartement_list(request):
     subdepts = Subdepartement.objects.all().order_by('name')
 
@@ -256,6 +364,75 @@ def export_subdeptToExcel(request):
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=Subdept.xlsx'
     wb.save(response)
+    return response
+
+def print_subdeptToPdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="Subdepartement.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Title'],
+        alignment=1, #0=left 1=center 2=right
+        fontSize=16,
+        spaceAfter=6,
+    )
+    dateStyle = ParagraphStyle(
+        'DateStyle',
+        parent=styles['Normal'],
+        alignment=1,
+        fontsize=10,
+        textColor=colors.grey,
+        spaceAfter=20,
+    )
+
+    # judul
+    title = Paragraph("Sub-Departement Report", title_style)
+    elements.append(title)
+
+    # date
+    date_str = datetime.now().strftime("%d %B %Y, %H:%M")
+    date_paragraph=Paragraph(f"Date: {date_str}", dateStyle)
+    elements.append(date_paragraph)
+
+    # spacer sebelum table
+    elements.append(Spacer(1, 12))
+
+    # ambil data dari model
+    subdept = Subdepartement.objects.all().order_by("name")
+
+    # header tabel
+    data = [[ 'No', 'Name', 'Leader' ]]
+
+    # isi table
+    for i, subdept in enumerate(subdept, start=1):
+        data.append([
+            i, 
+            subdept.name,
+            subdept.leader,
+        ])
+
+    # buat tabel
+    table = Table(data, colWidths=[40, 200, 150])
+    
+    # style table
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ])
+    table.setStyle(style)
+    elements.append(table)
+
+    # Build PDF
+    doc.build(elements)
     return response
 
 
@@ -394,4 +571,87 @@ def export_transaksiToExcel(request):
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=Transaction.xlsx'
     wb.save(response)
+    return response
+
+def print_transactionToPdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition']='attachment; filename="Transaction.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=landscape(A4))
+    elements = []
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Title'],
+        alignment=1, #0=left 1=center 2=right
+        fontSize=16,
+        spaceAfter=5,
+    )
+    dateStyle = ParagraphStyle(
+        'DateStyle',
+        parent=styles['Normal'],
+        alignment=1,
+        fontsize=10,
+        textColor=colors.grey,
+        spaceAfter=10,
+    )
+
+    # judul
+    title = Paragraph("Transaction Report", title_style)
+    elements.append(title)
+
+    # date
+    date_str = datetime.now().strftime("%d %B %Y, %H:%M")
+    date_paragraph=Paragraph(f"Date: {date_str}", dateStyle)
+    elements.append(date_paragraph)
+
+    # spacer sebelum table
+    elements.append(Spacer(1, 12))
+
+    # ambil data dari model
+    transactions = Transaction.objects.all().order_by("-date")
+
+    # header tabel
+    data = [[ 'No', 'Date', 'Type', 'Requested By', 'received_by', 'Sub-Dept', 'item', 'qty', 'note']]
+
+    # isi table
+    for idx, trx in enumerate(transactions, start=1):
+        if trx.items.exists():
+            # gabungkan semua item
+            item_str = "\n".join([f"{trx_item.item.name} ({trx_item.qty})" for trx_item in trx.items.all()])
+            total_qty = sum([trx_item.qty for trx_item in trx.items.all()])
+        else:
+            items_str = "-"
+            total_qty = 0
+        
+        data.append([
+            idx,
+            trx.date.strftime("%Y-%m-%d %H:%M"),
+            trx.transaction_type,
+            trx.requested_by,
+            trx.received_by,
+            trx.subdepartement.name,
+            item_str,
+            total_qty,
+            trx.note,
+        ])
+        
+    # buat tabel
+    table = Table(data, colWidths=[40, 90, 30, 100, 100, 80, 150, 40, 100])
+    
+    # style table
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ])
+    table.setStyle(style)
+    elements.append(table)
+
+    # Build PDF
+    doc.build(elements)
     return response
