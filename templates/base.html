@@ -29,14 +29,28 @@
       </button>
 
       <div class="ms-auto d-flex align-items-center">
-        <button id="toggleTheme" class="btn btn-yellow-400 me-3"><ion-icon name="sunny-outline"></ion-icon></button>
-        <button class="btn btn-red-200"><ion-icon name="exit-outline"></ion-icon>Sign Out</button>
+        <button id="toggleTheme" class="btn btn-yellow-400 me-3"><i class="bi bi-sun-fill"></i></button>
+        <!-- <button class="btn btn-red-200"><ion-icon name="exit-outline"></ion-icon>Sign Out</button> -->
         <!-- <div class="navbar-nav mr-2">
           <div class="nav-item text-nowrap">
             <a class="btn btn-red-400" href="#">Sign out</a>
           </div>
         </div> -->
       </div>
+      <div class="dropdown me-3">
+        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" 
+           id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <!-- Avatar user -->
+          <img src="{% static 'img/user.png' %}" alt="user" width="32" height="32" class="rounded-circle me-2">
+          <span class="d-none d-sm-inline"> {{ request.user.username }} </span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="userDropdown">
+          <li><a class="dropdown-item" href="#"> <i class="bi bi-person-circle"></i> Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href=""><i class="bi bi-door-open"></i>Logout</a></li>
+        </ul>
+      </div>
+      
     </header>
 
     <div class="row">
@@ -114,15 +128,15 @@
     </script>
     <script>
       const toggleThemeBtn = document.getElementById('toggleTheme');
-      const icon = toggleBtn.querySelector('ion-icon');
+      const icon = toggleBtn.querySelector('i');
 
       //ubah icon
       toggleThemeBtn.addEventListener("click", () => {
         document.body.classList.toggle("dark-mode");
         if (document.body.classList.contains("dark-mode")) {
-          icon.setAttribute('name', 'moon');
+          icon.setAttribute('class', 'bi bi-moon-stars-fill');
         }else{
-          icon.setAttribute('name', 'sunny');
+          icon.setAttribute('class', 'bi bi-sun-fill');
         }
       });
     </script>
