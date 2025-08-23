@@ -1,5 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+<script>
+    $(document).ready(function () {
+        $('#filter-input').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('table tbody tr').filter(function () {
+                var rowText = $(this).text().toLowerCase();  // Ambil semua teks dalam baris
+                $(this).toggle(rowText.indexOf(value) > -1); // Tampilkan jika cocok
+            });
+        });
+    });
+</script>
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2 class="h2">{{ title }}</h2>
         <div class="btn-toolbar mb-2 mb-md-0">

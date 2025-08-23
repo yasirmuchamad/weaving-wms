@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.db import transaction
+from django.db.models import Q 
 from django.core.paginator import Paginator
 import openpyxl
 from openpyxl.styles import Font, Alignment
@@ -146,8 +147,28 @@ def print_locationToPdf(request):
     doc.build(elements)
     return response
 
+def filter_location(request):
+    query = request.GET.get('q','').strip()
+    print("receive query:", query)
 
+    if query:
+        locations = Location.objects.filter(
+            Q(name__icontains=query)
+        )
+    else:
+        locations = Location.objects.all()
     
+    location_list = []
+    for location in locations:
+
+        location_list.append({
+            'id':location.id,
+            'name':location.name,
+        })
+
+    return JsonResponse({'location':location_list})
+
+
 def item_list(request):
     item_lists = Item.objects.all().order_by('name')
 
@@ -231,6 +252,30 @@ def export_itemToExcel(request):
     response['Content-Disposition'] = 'attachment; filename=Item.xlsx'
     wb.save(response)
     return response
+
+def filter_item(request):
+    query = request.GET.get('q','').strip()
+    print("receive query:", query)
+
+    if query:
+        items = Item.objects.filter(
+            Q(name__icontains=query)|Q(location_name__icontains=query)
+        )
+    else:
+        items = Item.objects.all()
+    
+    item_list = []
+    for item in items:
+
+        item_list.append({
+            'id':item.id,
+            'name':item.name,
+            'unit':item.unit,
+            'location':item.location.name,
+            'picture':item.picture.url if item.picture else None,
+        })
+
+    return JsonResponse({'item':item_list})
 
 def print_itemToPdf(request):
     response = HttpResponse(content_type='application/pdf')
@@ -365,6 +410,28 @@ def export_subdeptToExcel(request):
     response['Content-Disposition'] = 'attachment; filename=Subdept.xlsx'
     wb.save(response)
     return response
+
+def filter_subdepartement(request):
+    query = request.GET.get('q','').strip()
+    print("receive query:", query)
+
+    if query:
+        subdepts = Subdepartement.objects.filter(
+            Q(name__icontains=query)|Q(leader__icontains=query)
+        )
+    else:
+        subdepts = Subdepartement.objects.all()
+    
+    subdepts_list = []
+    for subdept in subdepts:
+
+        subdepts_list.append({
+            'id':subdept.id,
+            'name':subdept.name,
+            'leader':subdept.leader,
+        })
+
+    return JsonResponse({'subdept':subdepts_list})
 
 def print_subdeptToPdf(request):
     response = HttpResponse(content_type='application/pdf')
@@ -511,6 +578,7 @@ def add_transaction(request):
 
     return render(request, 'wms/transaction/transaction_form.html', context)
 
+
 def export_transaksiToExcel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -655,3 +723,34 @@ def print_transactionToPdf(request):
     # Build PDF
     doc.build(elements)
     return response
+
+def filter_transaction(request):
+    query = request.GET.get('q','').strip()
+    print("receive query:", query)
+
+    if query:
+        transactions = Transaction.objects.filter(
+            Q(transaction_type__iexact=query)
+            |Q(date__icontains=query)
+            |Q(requested_by__icontains=query)
+            |Q(received_by__icontains=query)
+            |Q(subdepartement__name__icontains=query)
+            |Q(items__name__icontains=query)
+        ).distinct()
+    else:
+        transactions = Transaction.objects.all()
+    
+    transaction_list = []
+    for transaction in transactions:
+
+        transaction_list.append({
+            'id':transaction.id,
+            'transaction_type':transaction.transaction_type,
+            'date':transaction.date.strftime("%Y-%m-%d"),
+            'requested_by':transaction.requested_by,
+            'received_by':transaction.received_by,
+            'subdepartement':transaction.subdepartement.name if transaction.subdepartement else "",
+            'items':[item.name for item in transaction.items.all()]
+        })
+
+    return JsonResponse({'transaction':transaction_list})
