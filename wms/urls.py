@@ -28,4 +28,5 @@ urlpatterns = [
     path('transaction/add-transaction/', views.add_transaction, name='add_transaction'),
     path('transaction/export', views.export_transaksiToExcel, name='export_transaction'),
     path('transaction/print', views.print_transactionToPdf, name='print_transaction'),
+    path('transaction/filter', views.filter_transaction, name='filter_transaction')
 ]

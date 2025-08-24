@@ -5,7 +5,7 @@ from django.forms import inlineformset_factory
 from django.db.models import Sum
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db import transaction
 from django.db.models import Q 
 from django.core.paginator import Paginator
@@ -591,7 +591,7 @@ def export_transaksiToExcel(request):
     # ws['A1'].alignment = Alignment(horizontal='center')
 
     # Header
-    headers = ['Id', 'Date', 'Type', 'requested_by', 'received_by', 'Sub-departement', 'Item', 'Qty']
+    headers = ['Id', 'Type', 'Date', 'requested_by', 'received_by', 'Sub-departement', 'Item', 'Qty']
     ws.append(headers)
 
     # Data
@@ -602,8 +602,8 @@ def export_transaksiToExcel(request):
             for trx_item in trx.items.all():
                 ws.append([
                     idx,
-                    trx.date.strftime("%Y-%m-%d %H:%M"),
                     trx.transaction_type,
+                    trx.date.strftime("%Y-%m-%d %H:%M"),
                     trx.requested_by,
                     trx.received_by,
                     trx.subdepartement.name,
@@ -614,14 +614,14 @@ def export_transaksiToExcel(request):
         else:
             ws.append([
                 idx,
-                    trx.date.strftime("%Y-%m-%d %H:%M"),
-                    trx.transaction_type,
-                    trx.requested_by,
-                    trx.received_by,
-                    trx.subdepartement.name,
-                    "-",
-                    0,
-                    trx.note,
+                trx.transaction_type,
+                trx.date.strftime("%Y-%m-%d %H:%M"),
+                trx.requested_by,
+                trx.received_by,
+                trx.subdepartement.name,
+                "-",
+                0,
+                trx.note,
                 ])
         
         for col in ws.columns:
@@ -726,10 +726,15 @@ def print_transactionToPdf(request):
 
 def filter_transaction(request):
     query = request.GET.get('q','').strip()
-    print("receive query:", query)
+    transaction_type=request.GET.get('transaction_type', '').strip()
+
+    print("reseive query:", query, "transaction-type:", transaction_type)
+
+    transactions = Transaction.objects.all()
+
 
     if query:
-        transactions = Transaction.objects.filter(
+        transactions = transactions.filter(
             Q(transaction_type__iexact=query)
             |Q(date__icontains=query)
             |Q(requested_by__icontains=query)
@@ -737,20 +742,25 @@ def filter_transaction(request):
             |Q(subdepartement__name__icontains=query)
             |Q(items__name__icontains=query)
         ).distinct()
-    else:
-        transactions = Transaction.objects.all()
-    
+
+    if transaction_type: #hanya filter saat ada pilihan
+        transactions = transactions.filter(transaction_type=transaction_type)
+
     transaction_list = []
     for transaction in transactions:
-
+        total_qty = sum(i.qty for i in transaction.items.all())  # <-- hitung manual
         transaction_list.append({
             'id':transaction.id,
             'transaction_type':transaction.transaction_type,
             'date':transaction.date.strftime("%Y-%m-%d"),
+            'items':[
+                {'name':item.item.name, 'qty':item.qty} for item in transaction.items.all()
+                ],
+            'total_qty':total_qty,
             'requested_by':transaction.requested_by,
             'received_by':transaction.received_by,
             'subdepartement':transaction.subdepartement.name if transaction.subdepartement else "",
-            'items':[item.name for item in transaction.items.all()]
+            'note':transaction.note,
         })
 
     return JsonResponse({'transaction':transaction_list})
