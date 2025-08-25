@@ -47,9 +47,18 @@
           <span class="d-none d-sm-inline"> {{ request.user.username }} </span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="userDropdown">
-          <li><a class="dropdown-item" href="#"> <i class="bi bi-person-circle"></i> Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'wms:profile' %}"> <i class="bi bi-person-circle"></i> Profile</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href=""><i class="bi bi-door-open"></i>Logout</a></li>
+          
+          <!-- {% if user.is_authenticated %}
+            <li><a class="dropdown-item" href="{% url 'wms:logout' %}"><i class="bi bi-door-open"></i>Logout</a></li>
+          {% endif %} -->
+          <li>
+            <form method="post" action="{% url 'wms:logout' %}" style="display-inline;">
+              {% csrf_token %}
+              <button type="button" class="dropdown-item" style="background: none; border:none; width: 100%; text-align: left;" data-bs-toggle="modal" data-bs-target="#confirmLogout"><i class="bi bi-door-open"></i>Logout</button>
+            </form>
+          </li>
         </ul>
       </div>
       
@@ -103,6 +112,28 @@
       <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
         {% block content %}{% endblock content %}
       </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="confirmLogout" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Konfirmasi Logout</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            Apakah Anda yakin ingin keluar?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <form method="post" action="{% url 'wms:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->

@@ -17,7 +17,38 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from datetime import datetime
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
 
+
+class CustomLoginView(LoginView):
+    template_name = 'wms/signin.html'
+
+    def form_valid(self, form):
+        # login user dulu
+        response = super().form_valid(form)
+
+        #cek apakah remme di centang
+        if not self.request.POST.get("remember_me"):
+            # session berlaku sampai browser close
+            self.request.session.set_expiry(0)
+        else:
+            # misal sampai 30hari
+            self.request.session.set_expiry(60 * 60 * 24 * 7)
+
+        return response
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect("wms:logout")
+
+@login_required
+def profile(request):
+    return render(request, "wms/profile.html", {'user':request.user})
+
+@login_required
 def dashboard(request):
     total_item = Item.objects.count()
     total_location = Location.objects.count()
@@ -83,6 +114,7 @@ def dashboard(request):
     }
     return render(request, 'wms/dashboard.html', context)
 
+@login_required
 def location_list(request):
     locations = Location.objects.all().order_by('name')
 
@@ -96,6 +128,7 @@ def location_list(request):
     }
     return render(request, 'wms/location/location_list.html', context)
 
+@login_required
 def add_location(request):
     if request.method == 'POST':
         form = LocationForm(request.POST)
@@ -111,6 +144,7 @@ def add_location(request):
 
     return render(request, 'wms/location/location_form.html', context)
 
+@login_required
 def update_location(request, pk):
     location = get_object_or_404(Location, pk=pk)
 
@@ -128,6 +162,7 @@ def update_location(request, pk):
     }
     return render(request, 'wms/location/location_form.html', context)
 
+@login_required
 def delete_location(request, pk):
     location = get_object_or_404(Location, pk=pk)
 
@@ -135,6 +170,7 @@ def delete_location(request, pk):
         location.delete()
     return redirect('wms:location_list')
 
+@login_required
 def export_locationToExcel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -163,6 +199,7 @@ def export_locationToExcel(request):
     wb.save(response)
     return response
 
+@login_required
 def print_locationToPdf(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition']='attachment; filename="location.pdf"'
@@ -212,6 +249,7 @@ def print_locationToPdf(request):
     doc.build(elements)
     return response
 
+@login_required
 def filter_location(request):
     query = request.GET.get('q','').strip()
     print("receive query:", query)
@@ -233,7 +271,7 @@ def filter_location(request):
 
     return JsonResponse({'location':location_list})
 
-
+@login_required
 def item_list(request):
     item_lists = Item.objects.all().order_by('name')
 
@@ -247,6 +285,7 @@ def item_list(request):
     }
     return render(request, 'wms/item/item_list.html', context)
 
+@login_required
 def add_item(request):
     if request.method == 'POST':
         form = ItemForm(request.POST, request.FILES)
@@ -262,6 +301,7 @@ def add_item(request):
     }
     return render(request, 'wms/item/item_form.html', context)
 
+@login_required
 def update_item(request, pk):
     item = get_object_or_404(Item, pk=pk)
 
@@ -279,6 +319,7 @@ def update_item(request, pk):
     }
     return render(request, 'wms/item/item_form.html', context)
 
+@login_required
 def delete_item(request, pk):
     item = get_object_or_404(Item, pk=pk)
 
@@ -286,6 +327,7 @@ def delete_item(request, pk):
         item.delete()
     return redirect('wms:item_list')
 
+@login_required
 def export_itemToExcel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -318,6 +360,7 @@ def export_itemToExcel(request):
     wb.save(response)
     return response
 
+@login_required
 def filter_item(request):
     query = request.GET.get('q','').strip()
     print("receive query:", query)
@@ -342,6 +385,7 @@ def filter_item(request):
 
     return JsonResponse({'item':item_list})
 
+@login_required
 def print_itemToPdf(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition']='attachment; filename="item.pdf"'
@@ -394,6 +438,7 @@ def print_itemToPdf(request):
     doc.build(elements)
     return response
 
+@login_required
 def subdepartement_list(request):
     subdepts = Subdepartement.objects.all().order_by('name')
 
@@ -407,6 +452,7 @@ def subdepartement_list(request):
     }
     return render(request, 'wms/subdept/subdept_list.html', context)
 
+@login_required
 def add_subdepartement(request):
     if request.method == 'POST':
         form = SubdepartementForm(request.POST)
@@ -422,6 +468,7 @@ def add_subdepartement(request):
     }
     return render(request, 'wms/subdept/subdept_form.html', context)
 
+@login_required
 def update_subdepartement(request, pk):
     subdept = get_object_or_404(Subdepartement, pk=pk)
 
@@ -439,6 +486,7 @@ def update_subdepartement(request, pk):
     }
     return render(request, 'wms/subdept/subdept_form.html', context)
 
+@login_required
 def delete_subdepartement(request, pk):
     subdept = get_object_or_404(Subdepartement, pk=pk)
 
@@ -446,7 +494,7 @@ def delete_subdepartement(request, pk):
         subdept.delete()
     return redirect('wms:subdept_list')
 
-
+@login_required
 def export_subdeptToExcel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -476,6 +524,7 @@ def export_subdeptToExcel(request):
     wb.save(response)
     return response
 
+@login_required
 def filter_subdepartement(request):
     query = request.GET.get('q','').strip()
     print("receive query:", query)
@@ -498,6 +547,7 @@ def filter_subdepartement(request):
 
     return JsonResponse({'subdept':subdepts_list})
 
+@login_required
 def print_subdeptToPdf(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition']='attachment; filename="Subdepartement.pdf"'
@@ -567,7 +617,7 @@ def print_subdeptToPdf(request):
     doc.build(elements)
     return response
 
-
+@login_required
 def transaction_list(request):
     transaction_item = Transaction.objects.annotate(total_qty=Sum('items__qty')).order_by('-date')
 
@@ -581,6 +631,7 @@ def transaction_list(request):
      }
     return render(request, 'wms/transaction/transaction_list.html', context)
 
+@login_required
 def add_transaction(request):
     TransactionItemFormSet = inlineformset_factory(
         Transaction, TransactionItem, form=TransactionItemForm, extra=1, can_delete=True
@@ -643,7 +694,7 @@ def add_transaction(request):
 
     return render(request, 'wms/transaction/transaction_form.html', context)
 
-
+@login_required
 def export_transaksiToExcel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -706,6 +757,7 @@ def export_transaksiToExcel(request):
     wb.save(response)
     return response
 
+@login_required
 def print_transactionToPdf(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition']='attachment; filename="Transaction.pdf"'
@@ -789,6 +841,7 @@ def print_transactionToPdf(request):
     doc.build(elements)
     return response
 
+@login_required
 def filter_transaction(request):
     query = request.GET.get('q','').strip()
     transaction_type=request.GET.get('transaction_type', '').strip()
