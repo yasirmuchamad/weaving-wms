@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2>{{title}}</h2>
+  <div class="row mt-4">
+    <!-- Cards -->
+    <div class="col-md-3">
+      <div class="card shadow-sm text-center">
+        <div class="card-body text-bg-info">
+          <h5>Total Item</h5>
+          <h3>{{ total_item }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm text-center text-bg-warning">
+        <div class="card-body">
+          <h5>Total Location</h5>
+          <h3>{{ total_location }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm text-center text-bg-success">
+        <div class="card-body">
+          <h5>Inbound Transaction</h5>
+          <h3>{{ total_in }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm text-center text-bg-danger">
+        <div class="card-body">
+          <h5>Outbound Transaction</h5>
+          <h3>{{ total_out }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row mt-5">
+    <div class="col-md-3 mb-3">
+        <h5>In Out Item Quantity</h5>
+        <canvas id="pieChartInOut"></canvas>
+    </div>
+    <div class="col-md-6 mb-3">
+        <h5>Out Item per Subdepartement</h5>
+        <canvas id="subdeptChart"></canvas>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <h5>Critical Stocks</h5>
+      <ul class="list-group">
+        {% for item in low_stock %}
+          <li class="list-group-item d-flex justify-content-between">
+            {{ item.name }} <span class="badge bg-danger">{{ item.stock }}</span>
+          </li>
+        {% empty %}
+          <li class="list-group-item">Tidak ada stok kritis</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="row mt-4">
+    <div class="col-6">
+      <h5> Latest Inbound Transaction</h5>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Received by</th>
+            <th>Item</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trx in latest_in %}
+            {% for t_item in trx.items.all %}
+            <tr>
+                <td>{{ trx.date|date:"d-m-Y H:i" }}</td>
+                <td>{{ trx.received_by }}</td>
+                <td>{{ t_item.item.name }}</td>
+                <td>{{ t_item.qty }}</td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="col-6">
+        <h5> Latest Outbound Transaction</h5>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Requested by</th>
+              <th>Item</th>
+              <th>Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trx in latest_out %}
+              {% for t_item in trx.items.all %}
+              <tr>
+                  <td>{{ trx.date|date:"d-m-Y H:i" }}</td>
+                  <td>{{ trx.received_by }}</td>
+                  <td>{{ t_item.item.name }}</td>
+                  <td>{{ t_item.qty }}</td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('pieChartInOut');
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['IN', 'OUT'],
+        datasets: [{
+            data: [{{ in_count }}, {{ out_count }}],
+            backgroundColor: ['#28a745', '#dc3545'],
+        }]
+    }
+});
+</script>
+<script>
+    const ctxs = document.getElementById('subdeptChart').getContext('2d');
+    new Chart(ctxs, {
+      type: 'bar',
+      data: {
+        labels: {{ subdept_label|safe }},
+        datasets: [{
+          label: 'Total Item Keluar',
+          data: {{ subdept_value|safe }},
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
+{% endblock %}

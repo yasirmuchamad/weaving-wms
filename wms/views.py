@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Item, Subdepartement, Transaction, TransactionItem, Location
 from .forms import ItemForm, SubdepartementForm, TransactionForm, TransactionItemForm, TransactionItemFormSet, LocationForm
 from django.forms import inlineformset_factory
-from django.db.models import Sum
+from django.db.models import Sum, F, Case, When, IntegerField
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
@@ -17,6 +17,71 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from datetime import datetime
+
+def dashboard(request):
+    total_item = Item.objects.count()
+    total_location = Location.objects.count()
+    total_in = Transaction.objects.filter(transaction_type='IN').count()
+    total_out = Transaction.objects.filter(transaction_type='OUT').count()
+
+    # grafik transaksi IN vs OUT
+    in_count = Transaction.objects.filter(transaction_type='IN').count()
+    out_count = Transaction.objects.filter(transaction_type='OUT').count()
+
+    top_outgoing_item = (
+        TransactionItem.objects.filter(transaction__transaction_type="OUT").values("item__name").annotate(total_out=Sum("qty")).order_by("-total_out")[:5]
+    )
+
+    subdept_data = (
+        Transaction.objects.filter(transaction_type="OUT").values("subdepartement__name").annotate(total_qty=Sum("items__qty")).order_by("subdepartement__name", "-total_qty")
+    )
+
+    subdept_labels = [d["subdepartement__name"] for d in subdept_data]
+    subdept_values = [d["total_qty"] for d in subdept_data]
+
+
+    # stok kritis
+    items = Item.objects.annotate(
+        total_in=Sum(
+            Case(
+                When(transaction_items__transaction__transaction_type='IN', then=F('transaction_items__qty')),
+                output_field=IntegerField()
+            )
+        ),
+        total_out=Sum(
+            Case(
+                When(transaction_items__transaction__transaction_type='OUT', then=F('transaction_items__qty')),
+                output_field=IntegerField()
+            )
+        ),
+    ).annotate(
+        calc_stock=F('total_in') - F('total_out')
+    )
+    
+    low_stock = items.filter(calc_stock__lte=5)[:5]
+
+    # transaksi terbaru
+    latest_in = Transaction.objects.filter(transaction_type="IN").order_by("-date")[:5]
+    latest_out = Transaction.objects.filter(transaction_type="OUT").order_by("-date")[:5]
+    recent_transactions = Transaction.objects.order_by('-date')[:5]
+
+    context = {
+        'title':"Dashboard",
+        'total_item': total_item,
+        'total_location': total_location,
+        'total_in': total_in,
+        'total_out': total_out,
+        'in_count': in_count,
+        'out_count': out_count,
+        'low_stock': low_stock,
+        'recent_transactions': recent_transactions,
+        'latest_in': latest_in,
+        'latest_out': latest_out,
+        'top_outgoing_item': top_outgoing_item,
+        'subdept_label': subdept_labels,
+        'subdept_value': subdept_values,
+    }
+    return render(request, 'wms/dashboard.html', context)
 
 def location_list(request):
     locations = Location.objects.all().order_by('name')

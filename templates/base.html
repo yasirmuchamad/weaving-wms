@@ -61,35 +61,35 @@
         <div class="position-sticky pt-3 sidebar-sticky">
           <ul class="nav flex-column">
             <li class="nav-item">
-              <a class="nav-link" href="#">
+              <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'wms:dashboard' %}">
                 <!-- <ion-icon name="home-outline"></ion-icon> -->
                 <i class="bi bi-house-door"></i>
                 Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{% url 'wms:item_list' %}">
+              <a class="nav-link {% if request.resolver_match.url_name == 'item_list' %}active{% endif %}" href="{% url 'wms:item_list' %}">
                 <!-- <ion-icon name="grid-outline"></ion-icon> -->
                 <i class="bi bi-grid"></i>
                 Item
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'wms:location_list' %}">
+              <a class="nav-link {% if request.resolver_match.url_name == 'location_list' %}active{% endif %}" href="{% url 'wms:location_list' %}">
                 <!-- <ion-icon name="locate-outline"></ion-icon> -->
                 <i class="bi bi-geo-alt"></i>
                 Location
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'wms:subdept_list' %}">
+              <a class="nav-link {% if request.resolver_match.url_name == 'subdept_list' %}active{% endif %}" href="{% url 'wms:subdept_list' %}">
                 <!-- <ion-icon name="trail-sign-outline"></ion-icon> -->
                 <i class="bi bi-building-down"></i>
                 Sub-Departement
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'wms:transaction_list' %}">
+              <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}" href="{% url 'wms:transaction_list' %}">
                 <i class="bi bi-cart-check"></i>
                 Transaction
               </a>
